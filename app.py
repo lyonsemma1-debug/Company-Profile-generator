@@ -306,7 +306,7 @@ if uploaded_csv is not None:
         if shared_lib_missing:
             st.error(
                 "PDF export is unavailable because Chromium system libraries are missing on the host. "
-                "Deploy with the repository root packages.txt included, then redeploy. "
+                "Use the minimal root packages.txt from this repo and redeploy. "
                 "HTML export is still available."
             )
         else:
@@ -317,4 +317,7 @@ if uploaded_csv is not None:
             )
 
     st.subheader("Preview")
-    st.components.v1.html(compiled_html, height=700, scrolling=True)
+    if hasattr(st, "html"):
+        st.html(compiled_html)
+    else:
+        st.components.v1.html(compiled_html, height=700, scrolling=True)
