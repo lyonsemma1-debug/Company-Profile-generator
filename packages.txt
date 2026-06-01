@@ -1,5 +1,0 @@
-libglib2.0-0t64
-libnss3
-libnspr4
-libgbm1
-libxkbcommon0
