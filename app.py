@@ -1,7 +1,4 @@
 import streamlit as st
-import subprocess
-import sys
-from functools import lru_cache
 
 from generate_profiles import generate_profiles_from_csv_bytes
 
@@ -199,63 +196,11 @@ st.markdown(
     <div class="brief-hero">
       <div class="brief-kicker">// COMPANY PROFILE GENERATOR</div>
       <h1 class="brief-title">COMPANY PROFILES<span class="brief-title-accent">_</span></h1>
-      <p class="brief-sub">Drop one CSV to generate the full profile deck as HTML and A4 PDF with layout-accurate rendering.</p>
+      <p class="brief-sub">Drop one CSV to generate the full profile deck as HTML with layout-accurate rendering.</p>
     </div>
     """,
     unsafe_allow_html=True,
 )
-
-def html_to_pdf_bytes(compiled_html):
-    """Convert compiled HTML into an A4 PDF with no margins and background graphics."""
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError as exc:
-        raise RuntimeError(
-            "Playwright is not installed. Run: pip install playwright; playwright install chromium"
-        ) from exc
-
-    with sync_playwright() as p:
-        try:
-            browser = p.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-            )
-        except Exception as exc:
-            # Streamlit Cloud often has playwright package but no installed browser binary.
-            if "executable doesn't exist" in str(exc).lower():
-                ensure_chromium_installed()
-                browser = p.chromium.launch(
-                    headless=True,
-                    args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-                )
-            else:
-                raise
-
-        page = browser.new_page(viewport={"width": 595, "height": 842})
-        page.set_content(compiled_html, wait_until="networkidle")
-        pdf_bytes = page.pdf(
-            format="A4",
-            print_background=True,
-            prefer_css_page_size=True,
-            margin={"top": "0mm", "right": "0mm", "bottom": "0mm", "left": "0mm"},
-        )
-        browser.close()
-
-    return pdf_bytes
-
-
-@lru_cache(maxsize=1)
-def ensure_chromium_installed():
-    """Install Playwright Chromium once per process when missing in hosted environments."""
-    proc = subprocess.run(
-        [sys.executable, "-m", "playwright", "install", "chromium"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if proc.returncode != 0:
-        stderr = proc.stderr.strip() or proc.stdout.strip()
-        raise RuntimeError(f"Failed to install Chromium for Playwright: {stderr}")
 
 st.caption("Upload your CSV below.")
 st.caption("In-memory flow only: files are generated for download and not saved into this repository.")
@@ -266,16 +211,10 @@ if uploaded_csv is not None:
     file_signature = (uploaded_csv.name, uploaded_csv.size)
     if st.session_state.get("uploaded_file_signature") != file_signature:
         st.session_state["uploaded_file_signature"] = file_signature
-        st.session_state.pop("pdf_error", None)
-        with st.spinner("Generating profiles and PDF..."):
+        with st.spinner("Generating profiles..."):
             compiled_html, profile_count = generate_profiles_from_csv_bytes(uploaded_csv.getvalue())
             st.session_state["compiled_html"] = compiled_html
             st.session_state["profile_count"] = profile_count
-            try:
-                st.session_state["pdf_bytes"] = html_to_pdf_bytes(compiled_html)
-            except Exception as exc:
-                st.session_state.pop("pdf_bytes", None)
-                st.session_state["pdf_error"] = str(exc)
 
     compiled_html = st.session_state.get("compiled_html", "")
     profile_count = st.session_state.get("profile_count", 0)
@@ -289,35 +228,3 @@ if uploaded_csv is not None:
             file_name="profiles-output.html",
             mime="text/html",
         )
-
-    if "pdf_bytes" in st.session_state:
-        st.download_button(
-            label="Download A4 PDF",
-            data=st.session_state["pdf_bytes"],
-            file_name="profiles-output.pdf",
-            mime="application/pdf",
-        )
-    elif "pdf_error" in st.session_state:
-        pdf_error = st.session_state["pdf_error"]
-        shared_lib_missing = (
-            "error while loading shared libraries" in pdf_error.lower()
-            or "libglib-2.0.so.0" in pdf_error.lower()
-        )
-        if shared_lib_missing:
-            st.error(
-                "PDF export is unavailable because Chromium system libraries are missing on the host. "
-                "Use the minimal root packages.txt from this repo and redeploy. "
-                "HTML export is still available."
-            )
-        else:
-            st.warning(
-                "PDF export failed in this environment. "
-                "HTML export is still available. "
-                f"Details: {pdf_error}"
-            )
-
-    st.subheader("Preview")
-    if hasattr(st, "html"):
-        st.html(compiled_html)
-    else:
-        st.components.v1.html(compiled_html, height=700, scrolling=True)
