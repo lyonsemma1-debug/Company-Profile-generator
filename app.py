@@ -298,11 +298,23 @@ if uploaded_csv is not None:
             mime="application/pdf",
         )
     elif "pdf_error" in st.session_state:
-        st.warning(
-            "PDF export failed in this environment. "
-            "HTML export is still available. "
-            f"Details: {st.session_state['pdf_error']}"
+        pdf_error = st.session_state["pdf_error"]
+        shared_lib_missing = (
+            "error while loading shared libraries" in pdf_error.lower()
+            or "libglib-2.0.so.0" in pdf_error.lower()
         )
+        if shared_lib_missing:
+            st.error(
+                "PDF export is unavailable because Chromium system libraries are missing on the host. "
+                "Deploy with the repository root packages.txt included, then redeploy. "
+                "HTML export is still available."
+            )
+        else:
+            st.warning(
+                "PDF export failed in this environment. "
+                "HTML export is still available. "
+                f"Details: {pdf_error}"
+            )
 
     st.subheader("Preview")
     st.components.v1.html(compiled_html, height=700, scrolling=True)
