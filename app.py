@@ -1,4 +1,7 @@
 import streamlit as st
+import subprocess
+import sys
+from functools import lru_cache
 
 from generate_profiles import generate_profiles_from_csv_bytes
 
@@ -212,7 +215,22 @@ def html_to_pdf_bytes(compiled_html):
         ) from exc
 
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        try:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+            )
+        except Exception as exc:
+            # Streamlit Cloud often has playwright package but no installed browser binary.
+            if "executable doesn't exist" in str(exc).lower():
+                ensure_chromium_installed()
+                browser = p.chromium.launch(
+                    headless=True,
+                    args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+                )
+            else:
+                raise
+
         page = browser.new_page(viewport={"width": 595, "height": 842})
         page.set_content(compiled_html, wait_until="networkidle")
         pdf_bytes = page.pdf(
@@ -225,6 +243,20 @@ def html_to_pdf_bytes(compiled_html):
 
     return pdf_bytes
 
+
+@lru_cache(maxsize=1)
+def ensure_chromium_installed():
+    """Install Playwright Chromium once per process when missing in hosted environments."""
+    proc = subprocess.run(
+        [sys.executable, "-m", "playwright", "install", "chromium"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        stderr = proc.stderr.strip() or proc.stdout.strip()
+        raise RuntimeError(f"Failed to install Chromium for Playwright: {stderr}")
+
 st.caption("Upload your CSV below.")
 st.caption("In-memory flow only: files are generated for download and not saved into this repository.")
 
@@ -234,16 +266,29 @@ if uploaded_csv is not None:
     file_signature = (uploaded_csv.name, uploaded_csv.size)
     if st.session_state.get("uploaded_file_signature") != file_signature:
         st.session_state["uploaded_file_signature"] = file_signature
+        st.session_state.pop("pdf_error", None)
         with st.spinner("Generating profiles and PDF..."):
             compiled_html, profile_count = generate_profiles_from_csv_bytes(uploaded_csv.getvalue())
             st.session_state["compiled_html"] = compiled_html
             st.session_state["profile_count"] = profile_count
-            st.session_state["pdf_bytes"] = html_to_pdf_bytes(compiled_html)
+            try:
+                st.session_state["pdf_bytes"] = html_to_pdf_bytes(compiled_html)
+            except Exception as exc:
+                st.session_state.pop("pdf_bytes", None)
+                st.session_state["pdf_error"] = str(exc)
 
     compiled_html = st.session_state.get("compiled_html", "")
     profile_count = st.session_state.get("profile_count", 0)
 
     st.success(f"Generated {profile_count} profiles ({profile_count * 2} pages).")
+
+    if "compiled_html" in st.session_state:
+        st.download_button(
+            label="Download HTML",
+            data=st.session_state["compiled_html"].encode("utf-8"),
+            file_name="profiles-output.html",
+            mime="text/html",
+        )
 
     if "pdf_bytes" in st.session_state:
         st.download_button(
@@ -251,6 +296,12 @@ if uploaded_csv is not None:
             data=st.session_state["pdf_bytes"],
             file_name="profiles-output.pdf",
             mime="application/pdf",
+        )
+    elif "pdf_error" in st.session_state:
+        st.warning(
+            "PDF export failed in this environment. "
+            "HTML export is still available. "
+            f"Details: {st.session_state['pdf_error']}"
         )
 
     st.subheader("Preview")
