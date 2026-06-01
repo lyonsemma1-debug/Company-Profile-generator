@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Developer Profile – {{NAME}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────
+   Reset & base
+───────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #aaa;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+/* ─────────────────────────────────────────────
+   A4 page  (595 × 842 px = A4 @ 72 dpi, exact
+   match to Figma canvas)
+───────────────────────────────────────────── */
+.page {
+  position: relative;
+  width: 595px;
+  height: 842px;
+  background: #fff;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   Frame lines
+───────────────────────────────────────────── */
+.fl {
+  position: absolute;
+  background: #E1E1E1;
+}
+.fl.v { width: 1px; }
+.fl.h { height: 1px; }
+
+/* ─────────────────────────────────────────────
+   Section heading  [ LABEL ]
+───────────────────────────────────────────── */
+.sh {
+  font-family: 'Geist', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.2px;
+  line-height: 12px;
+  color: #f25103;
+}
+.sh .tx { color: #111112; }
+
+/* Large-bracket variant used on page 2 */
+.sh2 {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1;
+  color: #161616;
+}
+.sh2 .br { color: #f25103; }
+
+/* ─────────────────────────────────────────────
+   Chips / pills
+───────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid #7d7d7d;
+  border-radius: 100px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 8px;
+  font-weight: 400;
+  color: #7d7d7d;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────
+   Career timeline
+───────────────────────────────────────────── */
+.career-list {
+  position: absolute;
+  left: 44px;
+  top: 399px;
+  width: 271px;
+}
+
+.career-item {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 16px;
+}
+
+/* Square marker on the timeline */
+.career-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  background: #161616;
+}
+
+/* Vertical line connecting markers */
+.career-list::before {
+  content: '';
+  position: absolute;
+  left: 3.5px;
+  top: 8px;
+  width: 1px;
+  height: calc(100% - 8px);
+  background: #161616;
+}
+
+.career-header {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.career-company {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  font-size: 9px;
+  line-height: 12px;
+  color: #161616;
+  white-space: nowrap;
+}
+
+.career-dots {
+  flex: 1;
+  border-bottom: 1px dotted #7d7d7d;
+  margin-bottom: 0;
+  min-width: 8px;
+}
+
+.career-years {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  font-size: 9px;
+  line-height: 12px;
+  color: #161616;
+  white-space: nowrap;
+}
+
+.career-desc {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  font-size: 9px;
+  line-height: 12px;
+  color: #7d7d7d;
+}
+
+/* ─────────────────────────────────────────────
+   Right column – tools & skills
+───────────────────────────────────────────── */
+.right-section {
+  position: absolute;
+  left: 346px;
+  width: 219px;
+}
+
+.chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+/* ─────────────────────────────────────────────
+   Orange dot-diamond decoration  >>>>
+   (matches Figma corner ornament)
+───────────────────────────────────────────── */
+.ornament {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.diamond {
+  display: grid;
+  grid-template-columns: repeat(3, 2.65px);
+  grid-template-rows: repeat(3, 2.65px);
+  gap: 0;
+}
+.diamond span {
+  width: 2.65px;
+  height: 2.65px;
+}
+.diamond span.dot { background: #f25103; }
+
+/* ─────────────────────────────────────────────
+   Footer bar
+───────────────────────────────────────────── */
+.footer-tagline {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 802px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 400;
+  font-size: 9px;
+  line-height: 11.4px;
+  color: #030303;
+  white-space: nowrap;
+}
+.footer-tagline .sep { color: #ff6a34; }
+
+.footer-left {
+  position: absolute;
+  left: 44px;
+  top: 802px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 400;
+  font-size: 9px;
+  line-height: 11.4px;
+  color: #7d7d7d;
+  text-transform: uppercase;
+}
+
+.footer-right {
+  position: absolute;
+  right: 38px;
+  top: 802px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 400;
+  font-size: 9px;
+  line-height: 11.4px;
+  color: #7d7d7d;
+  text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────
+   Page 2 skill sections
+───────────────────────────────────────────── */
+.skill-section {
+  margin-bottom: 24px;
+}
+
+.skill-section .chip-wrap {
+  margin-top: 8px;
+}
+
+/* Two-column grid for page 2 (TESTING | BUILD STORAGE) */
+.skill-cols {
+  display: flex;
+  gap: 0;
+}
+.skill-col {
+  flex: 1;
+}
+.skill-col + .skill-col {
+  margin-left: 0;
+}
+
+/* ─────────────────────────────────────────────
+   Print  —  force Chrome to use exactly our
+   595 × 842 px canvas so absolute positions
+   match the screen layout 1-to-1.
+───────────────────────────────────────────── */
+@page {
+  size: 595px 842px;
+  margin: 0;
+}
+@media print {
+  body { background: white; padding: 0; gap: 0; }
+  .page {
+    page-break-after: always;
+    width: 595px;
+    height: 842px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 1 – PROFILE FRONT
+     ══════════════════════════════════════════════════════════ -->
+<div class="page" id="page1">
+
+  <!-- ── Frame lines ── -->
+  <!-- Outer verticals -->
+  <div class="fl v" style="left:20px; top:20px; height:802px;"></div>
+  <div class="fl v" style="left:575px; top:20px; height:802px;"></div>
+  <!-- Outer top -->
+  <div class="fl h" style="left:20px; top:20px; width:555px;"></div>
+  <!-- Header divider -->
+  <div class="fl h" style="left:20px; top:109px; width:555px;"></div>
+  <!-- Stats top/bottom -->
+  <div class="fl h" style="left:20px; top:274px; width:555px;"></div>
+  <div class="fl h" style="left:20px; top:354px; width:555px;"></div>
+  <!-- Column split (left/right content) -->
+  <div class="fl v" style="left:335px; top:354px; height:440px;"></div>
+  <!-- Right col sub-dividers -->
+  <div class="fl h" style="left:336px; top:593px; width:239px;"></div>
+  <div class="fl h" style="left:336px; top:749px; width:239px;"></div>
+  <!-- Footer lines -->
+  <div class="fl h" style="left:20px; top:793px; width:556px;"></div>
+  <div class="fl h" style="left:20px; top:821px; width:556px;"></div>
+  <!-- Education separator -->
+  <div class="fl v" style="left:416px; top:20px; height:89px;"></div>
+
+  <!-- ── Header ── -->
+  <p style="position:absolute; left:44px; top:36px;
+            font-family:'Geist',sans-serif; font-weight:400; font-size:28px;
+            line-height:35px; color:#000; letter-spacing:0; text-transform:uppercase;">{{NAME}}</p>
+
+  <p style="position:absolute; left:44px; top:75px;
+            font-family:'Geist',sans-serif; font-weight:500; font-size:10px;
+            line-height:12px; letter-spacing:0.2px; white-space:nowrap;">
+    <span style="color:#f25103;">/// </span><span style="color:#7c7c7c; text-transform:uppercase;">{{ROLE}}</span>
+  </p>
+
+  <!-- Education (top-right) -->
+  <p style="position:absolute; left:432px; top:31px;" class="sh">
+    <span>[  </span><span class="tx">EDUCATION</span><span>  ]</span>
+  </p>
+  <div style="position:absolute; left:431px; top:51px; width:140px;
+              font-family:'Geist Mono',monospace; font-weight:500; font-size:9px;
+              line-height:12px; color:#7d7d7d;">
+    <p>{{EDU_FIELD}}</p>
+    <p>{{EDU_INSTITUTION}}</p>
+    <p>&nbsp;</p>
+    <p style="color:#000;">{{EDU_YEARS}}</p>
+  </div>
+
+  <!-- ── Bio ── -->
+  <div style="position:absolute; left:44px; top:126px; width:508px;
+              font-family:'Geist Mono',monospace; font-weight:500; font-size:9px;
+              line-height:12px; color:#7d7d7d;">
+    <p>{{BIO_PARA_1}}</p>
+    <p style="margin-top:12px;">{{BIO_PARA_2}}</p>
+  </div>
+
+  <!-- ── Stats bar ── -->
+  <div style="position:absolute; left:44px; top:274px; height:80px; display:flex; gap:48px; align-items:center; text-transform:uppercase; overflow:hidden; width:511px;">
+    <div style="width:76px; flex-shrink:0; overflow:hidden;">
+      <p style="font-family:'Geist Mono',monospace; font-weight:400; font-size:24px; color:#161616; line-height:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{STAT_YEARS}}</p>
+      <p style="font-family:'Geist Mono',monospace; font-weight:500; font-size:9px; color:#f25103; line-height:11.4px; margin-top:4px;">YRS EXPERIENCE</p>
+    </div>
+    <div style="width:87px; flex-shrink:0; overflow:hidden;">
+      <p style="font-family:'Geist Mono',monospace; font-weight:400; font-size:24px; color:#161616; line-height:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{STAT_LEVEL}}</p>
+      <p style="font-family:'Geist Mono',monospace; font-weight:500; font-size:9px; color:#f25103; line-height:11.4px; margin-top:4px;">Level</p>
+    </div>
+    <div style="width:102px; flex-shrink:0; overflow:hidden;">
+      <p style="font-family:'Geist Mono',monospace; font-weight:400; font-size:24px; color:#161616; line-height:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{STAT_PLATFORM}}</p>
+      <p style="font-family:'Geist Mono',monospace; font-weight:500; font-size:9px; color:#f25103; line-height:11.4px; margin-top:4px;">Platform</p>
+    </div>
+    <div style="width:71px; flex-shrink:0; overflow:hidden;">
+      <p style="font-family:'Geist Mono',monospace; font-weight:400; font-size:24px; color:#161616; line-height:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{STAT_ROLES}}</p>
+      <p style="font-family:'Geist Mono',monospace; font-weight:500; font-size:9px; color:#f25103; line-height:11.4px; margin-top:4px;">Career Stages</p>
+    </div>
+  </div>
+
+  <!-- ── LEFT COLUMN: Career Trajectory ── -->
+  <p style="position:absolute; left:44px; top:369px;" class="sh">
+    <span>[ </span><span class="tx">CAREER TRAJECTORY</span><span> ]</span>
+  </p>
+
+  <!-- Career items: each item is company / dotted line / years + description -->
+  <div class="career-list">
+
+    <!-- ── Career Item 1 ── -->
+    <div class="career-item">
+      <div class="career-header">
+        <span class="career-company">{{JOB1_COMPANY}}</span>
+        <span class="career-dots"></span>
+        <span class="career-years">{{JOB1_YEARS}}</span>
+      </div>
+      <p class="career-desc">{{JOB1_DESC}}</p>
+    </div>
+
+    <!-- ── Career Item 2 ── -->
+    <div class="career-item">
+      <div class="career-header">
+        <span class="career-company">{{JOB2_COMPANY}}</span>
+        <span class="career-dots"></span>
+        <span class="career-years">{{JOB2_YEARS}}</span>
+      </div>
+      <p class="career-desc">{{JOB2_DESC}}</p>
+    </div>
+
+    <!-- ── Career Item 3 ── -->
+    <div class="career-item">
+      <div class="career-header">
+        <span class="career-company">{{JOB3_COMPANY}}</span>
+        <span class="career-dots"></span>
+        <span class="career-years">{{JOB3_YEARS}}</span>
+      </div>
+      <p class="career-desc">{{JOB3_DESC}}</p>
+    </div>
+
+    <!-- ── Career Item 4 ── -->
+    <div class="career-item">
+      <div class="career-header">
+        <span class="career-company">{{JOB4_COMPANY}}</span>
+        <span class="career-dots"></span>
+        <span class="career-years">{{JOB4_YEARS}}</span>
+      </div>
+      <p class="career-desc">{{JOB4_DESC}}</p>
+    </div>
+
+    <!-- Add more career items as needed -->
+
+  </div>
+
+  <!-- ── RIGHT COLUMN: Tools (y=354–593) ── -->
+  <div class="right-section" style="top:369px;">
+    <p class="sh"><span>[  </span><span class="tx">TOOLS</span><span>  ]</span></p>
+    <div class="chip-wrap" style="margin-top:8px;">
+      {{#TOOLS}}
+      <span class="chip">{{.}}</span>
+      {{/TOOLS}}
+      <!-- Example chips (replace with template loop from CSV):
+      <span class="chip">Android Studio</span>
+      <span class="chip">Profiler</span>
+      <span class="chip">GitHub/GitLab/Bitbucket Workflows</span>
+      <span class="chip">Google Play Console</span>
+      <span class="chip">Bitbucket Workflows</span>
+      <span class="chip">Internal/Closed/Open Testing Tracks</span>
+      <span class="chip">GIT</span>
+      <span class="chip">App Signing (Play App Signing)</span>
+      <span class="chip">Figma</span>
+      <span class="chip">Keystores &amp; Signing Configs</span>
+      -->
+    </div>
+  </div>
+
+  <!-- ── RIGHT COLUMN: Additional Skills — omit this entire block if {{ADDITIONAL_SKILLS}} is empty ── -->
+  <div class="right-section" style="top:610px;">
+    <p class="sh"><span>[  </span><span class="tx">ADDITIONAL SKILLS</span><span>  ]</span></p>
+    <div class="chip-wrap" style="margin-top:8px;">
+      {{#ADDITIONAL_SKILLS}}
+      <span class="chip">{{.}}</span>
+      {{/ADDITIONAL_SKILLS}}
+      <!-- Example chips:
+      <span class="chip">ASP.net</span>
+      <span class="chip">C#</span>
+      <span class="chip">JavaScript / ES6</span>
+      <span class="chip">AWS</span>
+      <span class="chip">Raspberry Pi Development</span>
+      <span class="chip">HTML</span>
+      <span class="chip">Azure</span>
+      -->
+    </div>
+  </div>
+
+  <!-- ── RIGHT COLUMN: Skills heading + ornament (y=749–793) ── -->
+  <div style="position:absolute; left:346px; top:764px; right:38px; display:flex; align-items:center; justify-content:space-between;">
+    <p class="sh"><span>[  </span><span class="tx">SKILLS</span><span>  ]</span></p>
+    <svg width="45" height="14" viewBox="0 0 45 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block; flex-shrink:0;">
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 37.049 6.10352e-05)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 39.6993 2.65039)" fill="#F25103"/>
+      <rect x="42.3497" y="7.95117" width="2.65033" height="2.65033" transform="rotate(90 42.3497 7.95117)" fill="#F25103"/>
+      <rect x="39.6993" y="10.6015" width="2.65033" height="2.65033" transform="rotate(90 39.6993 10.6015)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 42.3497 5.30072)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 12.3497 0)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 15 2.65051)" fill="#F25103"/>
+      <rect x="17.6503" y="7.95117" width="2.65033" height="2.65033" transform="rotate(90 17.6503 7.95117)" fill="#F25103"/>
+      <rect x="15" y="10.6015" width="2.65033" height="2.65033" transform="rotate(90 15 10.6015)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 17.6503 5.30084)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 24.6993 6.10352e-05)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 27.3497 2.65039)" fill="#F25103"/>
+      <rect x="30" y="7.95117" width="2.65033" height="2.65033" transform="rotate(90 30 7.95117)" fill="#F25103"/>
+      <rect x="27.3497" y="10.6015" width="2.65033" height="2.65033" transform="rotate(90 27.3497 10.6015)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 30 5.30072)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 0 0)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 2.65033 2.65051)" fill="#F25103"/>
+      <rect x="5.30066" y="7.95117" width="2.65033" height="2.65033" transform="rotate(90 5.30066 7.95117)" fill="#F25103"/>
+      <rect x="2.65033" y="10.6015" width="2.65033" height="2.65033" transform="rotate(90 2.65033 10.6015)" fill="#F25103"/>
+      <rect width="2.65033" height="2.65033" transform="matrix(-4.37114e-08 1 1 4.37114e-08 5.30066 5.30084)" fill="#F25103"/>
+    </svg>
+  </div>
+
+  <!-- ── Footer ── -->
+  <p class="footer-left">DESIGN <span style="color:#ff6a34;">///</span> ENGINEER <span style="color:#ff6a34;">///</span> DELIVER</p>
+  <p class="footer-tagline">GLUCODE</p>
+  <p class="footer-right">DEVELOPER PROFILES</p>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE 2 – PROFILE BACK  (skills deep-dive)
+     ══════════════════════════════════════════════════════════ -->
+<div class="page" id="page2">
+
+  <!-- ── Frame lines ── -->
+  <div class="fl v" style="left:20px; top:20px; height:802px;"></div>
+  <div class="fl v" style="left:575px; top:20px; height:802px;"></div>
+  <div class="fl h" style="left:20px; top:20px; width:555px;"></div>
+  <div class="fl h" style="left:20px; top:793px; width:556px;"></div>
+  <div class="fl h" style="left:20px; top:821px; width:556px;"></div>
+
+  <!-- ── Skill sections ──
+       Layout: full width for single-column sections, two-column for
+       TESTING / BUILD STORAGE pair.
+       All positions match the Figma layout at 595×842px.
+  ── -->
+
+  <!-- LANGUAGES AND UI -->
+  <div style="position:absolute; left:44px; top:44px; right:40px;">
+    <p class="sh2"><span class="br">[ </span>LANGUAGES AND UI<span class="br"> ]</span></p>
+    <div class="chip-wrap" style="margin-top:16px;">
+      {{#SKILLS_LANG_UI}}
+      <span class="chip">{{.}}</span>
+      {{/SKILLS_LANG_UI}}
+      <!-- Example:
+      <span class="chip">Kotlin</span>
+      <span class="chip">Java</span>
+      <span class="chip">Jetpack Compose</span>
+      <span class="chip">ARR Libraries (Android Archives)</span>
+      <span class="chip">App Links</span>
+      <span class="chip">Android Views (XML Layouts)</span>
+      <span class="chip">Kotlin Coroutines</span>
+      <span class="chip">Kotlin Flow / StateFlow</span>
+      <span class="chip">Push Notifications (FCM) &amp; Notification Manager</span>
+      <span class="chip">Deeplink Navigation</span>
+      <span class="chip">Health Connect (formerly Google Fit)</span>
+      <span class="chip">Navigation Component</span>
+      -->
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div style="position:absolute; left:44px; top:219px; right:40px;">
+    <p class="sh2"><span class="br">[ </span>ARCHITECTURE<span class="br"> ]</span></p>
+    <div class="chip-wrap" style="margin-top:16px;">
+      {{#SKILLS_ARCHITECTURE}}
+      <span class="chip">{{.}}</span>
+      {{/SKILLS_ARCHITECTURE}}
+      <!-- Example:
+      <span class="chip">SOLID Principles</span>
+      <span class="chip">Clean Architecture</span>
+      <span class="chip">Modular Architecture</span>
+      <span class="chip">Gang of Four Design Patterns</span>
+      <span class="chip">Architecture Model-View-Presenter (MVP) Architecture</span>
+      <span class="chip">Model-View-ViewModel (MVVM) Architecture</span>
+      -->
+    </div>
+  </div>
+
+  <!-- TESTING + BUILD STORAGE  (two-column) -->
+  <div style="position:absolute; left:44px; top:361px; right:80px; display:flex; gap:0;">
+    <!-- TESTING (left ~280px) -->
+    <div style="width:280px; flex-shrink:0;">
+      <p class="sh2"><span class="br">[ </span>TESTING<span class="br"> ]</span></p>
+      <div class="chip-wrap" style="margin-top:16px;">
+        {{#SKILLS_TESTING}}
+        <span class="chip">{{.}}</span>
+        {{/SKILLS_TESTING}}
+        <!-- Example:
+        <span class="chip">Unit Testing (JUnit, MockK, Mockito, Turbine)</span>
+        <span class="chip">UI Testing (Espresso, Compose UI Test, UI Automator)</span>
+        -->
+      </div>
+    </div>
+    <!-- BUILD STORAGE (right) -->
+    <div style="flex:1;">
+      <p class="sh2"><span class="br">[ </span>BUILD STORAGE<span class="br"> ]</span></p>
+      <div class="chip-wrap" style="margin-top:16px;">
+        {{#SKILLS_BUILD_STORAGE}}
+        <span class="chip">{{.}}</span>
+        {{/SKILLS_BUILD_STORAGE}}
+        <!-- Example:
+        <span class="chip">Gradle (Groovy / Kotlin DSL)</span>
+        <span class="chip">Realm (Kotlin SDK)</span>
+        <span class="chip">Room Datasource</span>
+        <span class="chip">Maven Central – JitPack</span>
+        -->
+      </div>
+    </div>
+  </div>
+
+  <!-- DISTRIBUTION -->
+  <div style="position:absolute; left:44px; top:470px; right:40px;">
+    <p class="sh2"><span class="br">[ </span>DISTRIBUTION<span class="br"> ]</span></p>
+    <div class="chip-wrap" style="margin-top:16px;">
+      {{#SKILLS_DISTRIBUTION}}
+      <span class="chip">{{.}}</span>
+      {{/SKILLS_DISTRIBUTION}}
+      <!-- Example:
+      <span class="chip">Google Play Console Submissions</span>
+      -->
+    </div>
+  </div>
+
+  <!-- NETWORK & AUTH -->
+  <div style="position:absolute; left:44px; top:544px; right:40px;">
+    <p class="sh2"><span class="br">[ </span>NETWORK &amp; AUTH<span class="br"> ]</span></p>
+    <div class="chip-wrap" style="margin-top:16px;">
+      {{#SKILLS_NETWORK_AUTH}}
+      <span class="chip">{{.}}</span>
+      {{/SKILLS_NETWORK_AUTH}}
+      <!-- Example:
+      <span class="chip">OkHttp, Retrofit, Ktor Client REST, GraphQL (Apollo), WebSockets</span>
+      <span class="chip">Kotlinx Serialization / Moshi / Gson</span>
+      <span class="chip">OAuth, JWT, AppAuth, Authentication Flows</span>
+      <span class="chip">BiometricPrompt API (Fingerprint / Face)</span>
+      -->
+    </div>
+  </div>
+
+  <!-- PLATFORM SERVICES -->
+  <div style="position:absolute; left:44px; top:687px; right:40px;">
+    <p class="sh2"><span class="br">[ </span>PLATFORM SERVICES<span class="br"> ]</span></p>
+    <div class="chip-wrap" style="margin-top:16px;">
+      {{#SKILLS_PLATFORM}}
+      <span class="chip">{{.}}</span>
+      {{/SKILLS_PLATFORM}}
+      <!-- Example:
+      <span class="chip">Firebase</span>
+      <span class="chip">Crashlytics</span>
+      <span class="chip">Localisation (strings.xml, plurals, locale qualifiers)</span>
+      <span class="chip">Dynamic Font Scaling (sp units, font scale settings)</span>
+      -->
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <p class="footer-left">DESIGN <span style="color:#ff6a34;">///</span> ENGINEER <span style="color:#ff6a34;">///</span> DELIVER</p>
+  <p class="footer-tagline">GLUCODE</p>
+  <p class="footer-right">DEVELOPER PROFILES</p>
+
+</div>
+
+</body>
+</html>
